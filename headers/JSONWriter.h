@@ -1,7 +1,7 @@
 #ifndef JSONWRITER_H
 #define JSONWRITER_H
 
-#include "Types.h" // Include the Tetrahedron class definition
+#include "Types.h"
 
 class JSONWriter {
 public:

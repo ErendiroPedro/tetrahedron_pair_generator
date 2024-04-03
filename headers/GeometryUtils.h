@@ -9,7 +9,6 @@ public:
     static IntersectionType getIntersectionClassification(const Tetrahedron& T1, const Tetrahedron& T2); 
     static std::vector<Point> getIntersectionShape(const Tetrahedron& T1, const Tetrahedron& T2);
     static Mesh tetrahedronToMesh(const Tetrahedron& T);
-
 };
 
 #endif // GEOMETRYUTILS_H
