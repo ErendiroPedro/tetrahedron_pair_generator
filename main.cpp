@@ -4,7 +4,6 @@
 #include "headers/TetrahedronFactory.h"
 #include "headers/Types.h"
 
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <NUMBER_OF_ENTRIES>" << std::endl;
@@ -24,16 +23,22 @@ int main(int argc, char* argv[]) {
 
     std::unique_ptr<TetrahedronFactory> tetrahedron_factory = std::make_unique<TetrahedronFactory>();
     for (int i = 0; i < NUMBER_OF_ENTRIES; ++i) {
-        auto tetrahedronPair = tetrahedron_factory->createRandomTetrahedronPair();
-        std::unique_ptr<Tetrahedron> tetrahedron1 = std::make_unique<Tetrahedron>(tetrahedronPair.first);
-        std::unique_ptr<Tetrahedron> tetrahedron2 = std::make_unique<Tetrahedron>(tetrahedronPair.second);
-        
+        std::unique_ptr<Tetrahedron> tetrahedron1;
+        std::unique_ptr<Tetrahedron> tetrahedron2;
+
+        if (i % 2 == 0) {
+            auto tetrahedronPair = tetrahedron_factory->createType1TetrahedronPair();
+            tetrahedron1 = std::make_unique<Tetrahedron>(tetrahedronPair.first);
+            tetrahedron2 = std::make_unique<Tetrahedron>(tetrahedronPair.second);
+        } else {
+            auto tetrahedronPair = tetrahedron_factory->createType4TetrahedronPair();
+            tetrahedron1 = std::make_unique<Tetrahedron>(tetrahedronPair.first);
+            tetrahedron2 = std::make_unique<Tetrahedron>(tetrahedronPair.second);
+        }
+
         bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
-        // IntersectionType intersection_class = GeometryUtils::getIntersectionClassification(*tetrahedron1, *tetrahedron2);
-        // std::vector<Point> resulting_shape = GeometryUtils::getIntersectionShape(*tetrahedron1, *tetrahedron2);
         writer.writeEntry(*tetrahedron1, *tetrahedron2, intersection_status);
     }
 
     return 0;
 }
-

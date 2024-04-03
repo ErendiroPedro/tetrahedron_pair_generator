@@ -6,7 +6,8 @@
 class TetrahedronFactory {
 public:
     static std::pair<Tetrahedron, Tetrahedron> createRandomTetrahedronPair();
-    // static std::pair<Tetrahedron, Tetrahedron> createType1TetrahedronPair();
+    static std::pair<Tetrahedron, Tetrahedron> createType1TetrahedronPair();
+    static std::pair<Tetrahedron, Tetrahedron> createType4TetrahedronPair();
     
 private:
 

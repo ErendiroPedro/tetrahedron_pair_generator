@@ -31,7 +31,61 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::createRandomTetrahedronP
     return std::make_pair(tetrahedron1, tetrahedron2);
 }
 
-// std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::createType1TetrahedronPair() {
+std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::createType1TetrahedronPair() { // No intersection
+
+    Point vertexA, vertexB, vertexC, vertexD;
+    Point vertex0, vertex1, vertex2, vertex3;
+    Tetrahedron tetrahedron1, tetrahedron2;
+
+    do {
+
+        vertexA = generateRandomPoint();
+        vertexB = generateRandomPoint();
+        vertexC = generateRandomPoint();
+        vertexD = generateRandomPoint();
+
+        vertex0 = generateRandomPoint();
+        vertex1 = generateRandomPoint();
+        vertex2= generateRandomPoint();
+        vertex3 = generateRandomPoint();
+
+        tetrahedron1 = Tetrahedron(vertexA, vertexB, vertexC, vertexD);
+        tetrahedron2 = Tetrahedron(vertex0, vertex1, vertex2, vertex3);
+
+
+    } while (tetrahedron1.is_degenerate() || tetrahedron2.is_degenerate() || CGAL::do_intersect(tetrahedron1, tetrahedron2));
+
+    return std::make_pair(tetrahedron1, tetrahedron2);
+}
+
+std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::createType4TetrahedronPair() { // Polyhedron
+
+    Point vertexA, vertexB, vertexC, vertexD;
+    Point vertex0, vertex1, vertex2, vertex3;
+    Tetrahedron tetrahedron1, tetrahedron2;
+
+    do {
+
+        vertexA = generateRandomPoint();
+        vertexB = generateRandomPoint();
+        vertexC = generateRandomPoint();
+        vertexD = generateRandomPoint();
+
+        vertex0 = generateRandomPoint();
+        vertex1 = generateRandomPoint();
+        vertex2= generateRandomPoint();
+        vertex3 = generateRandomPoint();
+
+        tetrahedron1 = Tetrahedron(vertexA, vertexB, vertexC, vertexD);
+        tetrahedron2 = Tetrahedron(vertex0, vertex1, vertex2, vertex3);
+
+
+    } while (tetrahedron1.is_degenerate() || tetrahedron2.is_degenerate() || ! CGAL::do_intersect(tetrahedron1, tetrahedron2));
+
+    return std::make_pair(tetrahedron1, tetrahedron2);
+}
+
+// std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::createType2TetrahedronPair() {
     
 //     Point vertexA, vertexB, vertexC, vertexD;
 //     Tetrahedron tetrahedron1, tetrahedron2;
