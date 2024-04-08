@@ -1,13 +1,12 @@
-#ifndef JSONWRITER_H
-#define JSONWRITER_H
+#pragma once
 
 #include "Types.h"
+#include "BaseWriter.h"
 
-class JSONWriter {
+class JSONWriter : public BaseWriter {
 public:
     JSONWriter(const std::string& filename);
     ~JSONWriter();
-    static std::string formatFilename(int number_of_entries);
     void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool intersectionStatus);
 
 private:
@@ -17,5 +16,3 @@ private:
 
     json tetrahedronToJson(const Tetrahedron& tetrahedron);
 };
-
-#endif // JSONWRITER_H

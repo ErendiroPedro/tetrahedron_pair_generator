@@ -2,14 +2,13 @@
 #define CSVWRITER_H
 
 #include "Types.h"
+#include "BaseWriter.h"
 
-
-class CSVWriter {
+class CSVWriter : public BaseWriter {
 public:
     CSVWriter(const std::string& filename);
     ~CSVWriter();
-    std::string static formatFilename(int number_of_entries);
-    void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, IntersectionType intersection_class, std::vector<Point> resulting_shape, bool intersects);
+    void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool intersects);
 private:
     std::ofstream outFile;
     std::vector<std::string> headers;

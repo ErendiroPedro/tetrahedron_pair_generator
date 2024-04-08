@@ -16,6 +16,7 @@ find_package(CGAL REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/headers)
 
 set(SOURCE_FILES
+    src/BaseWriter.cpp
     src/CSVWriter.cpp
     src/JSONWriter.cpp
     src/GeometryUtils.cpp
