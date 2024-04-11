@@ -1,6 +1,7 @@
 #include "BaseWriter.h"
 #include "CSVWriter.h"
 #include "JSONWriter.h"
+#include "OBJWriter.h"
 
 std::string formatFilename(const std::string& extension, int number_of_entries){
     std::string base_filename = "../output/tetrahedron_pair_";
@@ -37,6 +38,10 @@ std::unique_ptr<BaseWriter> BaseWriter::createWriter(const std::string& type, in
         return std::make_unique<JSONWriter>(filename);
     } else if(type == "csv") {
         return std::make_unique<CSVWriter>(filename);
+    } else if(type == "obj"){
+        std::string directory = filename.substr(0, filename.find_last_of(".")); // Remove extension
+        mkdir(directory.c_str(), 0777); // Create directory with read/write permissions
+        return std::make_unique<OBJWriter>(directory);
     }
     return nullptr;
 }

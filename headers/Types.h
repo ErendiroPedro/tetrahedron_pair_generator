@@ -12,6 +12,10 @@
 #include <utility>
 #include <iostream>
 #include <cmath>
+#include <sstream>
+#include <iomanip>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Nef_polyhedron_3.h>

@@ -1,5 +1,6 @@
 #include "headers/CSVWriter.h"
 #include "headers/JSONWriter.h"
+#include "headers/OBJWriter.h"
 #include "headers/GeometryUtils.h"
 #include "headers/TetrahedronFactory.h"
 #include "headers/Types.h"
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (format != "json" && format != "csv") {
+    if (format != "json" && format != "csv" && format != "obj") {
         std::cerr << "Unsupported format. Please choose 'json' or 'csv'." << std::endl;
         return 1;
     }
@@ -49,6 +50,13 @@ int main(int argc, char* argv[]) {
 
         bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
         writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_status);
+    }
+
+    if (format == "obj") {
+        OBJWriter* obj_writer = dynamic_cast<OBJWriter*>(writer.get());
+        if (obj_writer != nullptr) {
+            obj_writer->zipDirectory();
+        }
     }
 
     return 0;
