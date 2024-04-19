@@ -10,4 +10,6 @@ public:
     BaseWriter() = default;
     virtual ~BaseWriter() = default;
     virtual void writeEntry(const Tetrahedron& tetrahedron1, const Tetrahedron& tetrahedron2, bool intersection_status) = 0;
+protected:
+    int precision = 6;
 };

@@ -31,11 +31,21 @@ json JSONWriter::tetrahedronToJson(const Tetrahedron& tetrahedron) {
 
     for (int i = 0; i < 4; ++i) {
         Point p = tetrahedron.vertex(i);
-        std::vector<double> vertex = {
-            static_cast<double>(CGAL::to_double(p.x())), 
-            static_cast<double>(CGAL::to_double(p.y())), 
-            static_cast<double>(CGAL::to_double(p.z()))
-        };
+        std::vector<double> vertex;
+
+        std::ostringstream ss;
+        
+        ss << std::fixed << std::setprecision(precision) << CGAL::to_double(p.x());
+        vertex.push_back(std::stod(ss.str()));
+        ss.str("");  // Clear the stringstream
+
+        ss << std::fixed << std::setprecision(precision) << CGAL::to_double(p.y());
+        vertex.push_back(std::stod(ss.str()));
+        ss.str("");
+
+        ss << std::fixed << std::setprecision(precision) << CGAL::to_double(p.z());
+        vertex.push_back(std::stod(ss.str()));
+
         vertices.push_back(vertex);
     }
 
