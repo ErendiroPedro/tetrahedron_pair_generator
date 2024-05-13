@@ -74,6 +74,14 @@ void CSVWriter::writeHeaders() {
     outFile << "\n";
 }
 
-void CSVWriter::writeVertex(const Point& p) {
-    outFile << p.x() << "," << p.y() << "," << p.z();
+void CSVWriter::writeVertex(const Point& vertex) {
+    std::ostringstream strs;
+    strs << std::fixed << std::setprecision(precision) << static_cast<double>(CGAL::to_double(vertex.x()));
+    outFile << strs.str() << ",";
+    strs.str(""); strs.clear(); // Clear the stringstream for the next coordinate
+    strs << std::fixed << std::setprecision(precision) << static_cast<double>(CGAL::to_double(vertex.y()));
+    outFile << strs.str() << ",";
+    strs.str(""); strs.clear(); // Clear the stringstream for the next coordinate
+    strs << std::fixed << std::setprecision(precision) << static_cast<double>(CGAL::to_double(vertex.z()));
+    outFile << strs.str();
 }

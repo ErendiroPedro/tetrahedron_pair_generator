@@ -57,7 +57,33 @@ int main(int argc, char* argv[]) {
         if (obj_writer != nullptr) {
             obj_writer->zipDirectory();
         }
-    }
+    } if (format == "csv") {
+    //     std::string filename = "your_file.csv"; // Replace with your filename
+    //     std::ifstream inFile(filename);
+    //     std::vector<std::tuple<double, std::string>> data;
+
+    //     std::string line;
+    //     while (std::getline(inFile, line)) {
+    //         std::istringstream iss(line);
+    //         std::string tetrahedron1, tetrahedron2, intersectionStatus;
+    //         if (!(iss >> tetrahedron1 >> tetrahedron2 >> intersectionStatus)) { break; } // error
+
+    //         // Parse the x coordinate of the first vertex of the first tetrahedron
+    //         // This assumes that the tetrahedron is represented as a string "x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4"
+    //         std::string::size_type sz;
+    //         double x = std::stod(tetrahedron1, &sz);
+    //         data.push_back(std::make_tuple(x, line));
+    //     }
+
+    //     // Sort the data
+    //     std::sort(data.begin(), data.end());
+
+    //     // Write the sorted data back out to the CSV file
+    //     std::ofstream outFile(filename);
+    //     for (const auto& row : data) {
+    //         outFile << std::get<1>(row) << "\n";
+    // }
+}
 
     return 0;
 }
