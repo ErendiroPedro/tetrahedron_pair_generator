@@ -24,6 +24,7 @@
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/point_generators_3.h>
+#include <CGAL/Polygon_mesh_processing/measure.h>
 #include <nlohmann/json.hpp>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel ExactKernel;

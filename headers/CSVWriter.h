@@ -8,7 +8,7 @@ class CSVWriter : public BaseWriter {
 public:
     CSVWriter(const std::string& filename);
     ~CSVWriter();
-    void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool intersects);
+    void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double volume, bool intersects);
 private:
     std::ofstream outFile;
     std::vector<std::string> headers;

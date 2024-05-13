@@ -49,7 +49,8 @@ int main(int argc, char* argv[]) {
         }
 
         bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
-        writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_status);
+        double intersection_volume = GeometryUtils::getIntersectionVolume(*tetrahedron1, *tetrahedron2);
+        writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);
     }
 
     if (format == "obj") {
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]) {
     //     for (const auto& row : data) {
     //         outFile << std::get<1>(row) << "\n";
     // }
-}
+    }
 
     return 0;
 }

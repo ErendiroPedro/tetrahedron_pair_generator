@@ -26,6 +26,29 @@ std::vector<Point> GeometryUtils::getIntersectionShape(const Tetrahedron& T1, co
     return resulting_shape;
 }
 
+double GeometryUtils::getIntersectionVolume(const Tetrahedron& T1, const Tetrahedron& T2) {
+    double resulting_volume = 0;
+    if(!checkIntersection(T1, T2)) return resulting_volume;
+
+    Nef_polyhedron nef1 (tetrahedronToMesh(T1));
+    Nef_polyhedron nef2 (tetrahedronToMesh(T2));
+
+    Nef_polyhedron intersection = nef1 * nef2;
+
+    if(intersection.is_empty()) return resulting_volume; 
+    Polyhedron resulting_polyhedron;
+    intersection.convert_to_polyhedron(resulting_polyhedron);
+
+    if (!CGAL::is_valid_polygon_mesh(resulting_polyhedron)) {
+        throw std::runtime_error("Conversion Failed");
+    }
+
+    auto volume = CGAL::Polygon_mesh_processing::volume(resulting_polyhedron);
+    resulting_volume = CGAL::to_double(volume);
+
+    return resulting_volume;
+}
+
 IntersectionType GeometryUtils::getIntersectionClassification(const Tetrahedron& T1, const Tetrahedron& T2) {
     
     Nef_polyhedron nef1 (tetrahedronToMesh(T1));

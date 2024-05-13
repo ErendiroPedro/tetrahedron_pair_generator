@@ -3,7 +3,7 @@
 
 int OBJWriter::fileCounter = 0;
 
-void OBJWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool intersectionStatus) {
+void OBJWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double volume, bool intersectionStatus) {
     std::stringstream ss;
     ss << "tetrahedron_pair_" << std::setw(5) << std::setfill('0') << ++fileCounter << ".obj";
     std::ofstream outFile(baseDir + "/" + ss.str());

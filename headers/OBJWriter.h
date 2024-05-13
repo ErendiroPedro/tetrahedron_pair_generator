@@ -8,7 +8,7 @@ class OBJWriter : public BaseWriter {
 
 public:
     OBJWriter(const std::string& directory) : baseDir(directory) {}
-    void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool intersectionStatus);
+    void writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double volume, bool intersectionStatus);
     void zipDirectory();
     
 private:

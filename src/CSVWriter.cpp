@@ -15,7 +15,7 @@ CSVWriter::~CSVWriter() {
     outFile.close();
 }
 
-void CSVWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool intersects) {
+void CSVWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double volume, bool intersects) {
     for (int i = 0; i < 4; ++i) {
         writeVertex(T1.vertex(i));
         outFile << ",";
@@ -48,7 +48,7 @@ void CSVWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, bool in
     //     }
     // }
     // outFile << "\","; // End of the parenthesis encapsulated string for the resulting shape and adding comma to separate next field
-
+    outFile << std::fixed << std::setprecision(precision) << volume << ",";
     outFile << (intersects ? 1 : 0);
     outFile << "\n";
 }
@@ -63,6 +63,7 @@ void CSVWriter::initializeHeaders() {
     }
 
     // headers.push_back("intersection_class");
+    headers.push_back("intersection_volume");
     headers.push_back("intersection_status");
 }
 
