@@ -5,7 +5,6 @@
 #include "headers/TetrahedronFactory.h"
 #include "headers/Types.h"
 
-
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <NUMBER_OF_ENTRIES> <FORMAT>" << std::endl;
@@ -51,7 +50,19 @@ int main(int argc, char* argv[]) {
         bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
         double intersection_volume = GeometryUtils::getIntersectionVolume(*tetrahedron1, *tetrahedron2);
         writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);
-    }
+
+        // Print progress bar
+        std::cout << "\rProgress: [";
+        int pos = static_cast<int>(static_cast<float>(i) / NUMBER_OF_ENTRIES * 50);
+        for (int j = 0; j < 50; ++j) {
+            if (j < pos) std::cout << "=";
+            else if (j == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int(static_cast<float>(i) / NUMBER_OF_ENTRIES * 100.0) << " %";
+        std::cout.flush();
+
+        }
 
     if (format == "obj") {
         OBJWriter* obj_writer = dynamic_cast<OBJWriter*>(writer.get());
@@ -86,5 +97,7 @@ int main(int argc, char* argv[]) {
     // }
     }
 
+    std::cout << std::endl;
+    
     return 0;
 }
