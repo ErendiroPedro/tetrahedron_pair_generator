@@ -48,6 +48,7 @@ void CSVWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double 
     //     }
     // }
     // outFile << "\","; // End of the parenthesis encapsulated string for the resulting shape and adding comma to separate next field
+    
     outFile << std::fixed << std::setprecision(precision) << volume << ",";
     outFile << (intersects ? 1 : 0);
     outFile << "\n";

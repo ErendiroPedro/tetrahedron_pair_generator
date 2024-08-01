@@ -14,7 +14,7 @@ JSONWriter::~JSONWriter() {
     outFile.close();
 }
 
-void JSONWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2,double volume, bool intersectionStatus) {
+void JSONWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double volume, bool intersectionStatus) {
     json entry;
     entry["id"] = idCounter++;
     entry["tetrahedron_1"] = tetrahedronToJson(T1);
