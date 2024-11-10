@@ -2,17 +2,20 @@
 
 unsigned int MAX_VERTICES = 16;
 
-CSVWriter::CSVWriter(const std::string& filename) {
+CSVWriter::CSVWriter(const std::string& filename, int prec) : BaseWriter(prec) {
     outFile.open(filename);
     if (!outFile) {
         throw std::runtime_error("Unable to open file: " + filename);
     }
-    initializeHeaders();
+    setHeaders();
     writeHeaders();
 }
 
 CSVWriter::~CSVWriter() {
-    outFile.close();
+    if (outFile.is_open()){
+        outFile.flush();
+        outFile.close();
+    }
 }
 
 void CSVWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double volume, bool intersects) {
@@ -54,7 +57,7 @@ void CSVWriter::writeEntry(const Tetrahedron& T1, const Tetrahedron& T2, double 
     outFile << "\n";
 }
 
-void CSVWriter::initializeHeaders() {
+void CSVWriter::setHeaders() {
     for (int i = 1; i <= 2; ++i) {
         for (int v = 1; v <= 4; ++v) {
             headers.push_back("T" + std::to_string(i) + "_v" + std::to_string(v) + "_x");
@@ -64,8 +67,8 @@ void CSVWriter::initializeHeaders() {
     }
 
     // headers.push_back("intersection_class");
-    headers.push_back("intersection_volume");
-    headers.push_back("intersection_status");
+    headers.push_back("IntersectionVolume");
+    headers.push_back("HasIntersection");
 }
 
 void CSVWriter::writeHeaders() {
@@ -80,10 +83,10 @@ void CSVWriter::writeVertex(const Point& vertex) {
     std::ostringstream strs;
     strs << std::fixed << std::setprecision(precision) << static_cast<double>(CGAL::to_double(vertex.x()));
     outFile << strs.str() << ",";
-    strs.str(""); strs.clear(); // Clear the stringstream for the next coordinate
+    strs.str(""); strs.clear();
     strs << std::fixed << std::setprecision(precision) << static_cast<double>(CGAL::to_double(vertex.y()));
     outFile << strs.str() << ",";
-    strs.str(""); strs.clear(); // Clear the stringstream for the next coordinate
+    strs.str(""); strs.clear();
     strs << std::fixed << std::setprecision(precision) << static_cast<double>(CGAL::to_double(vertex.z()));
     outFile << strs.str();
 }

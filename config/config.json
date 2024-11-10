@@ -1,0 +1,71 @@
+{
+    "metadata": {
+        "description": "Configuration file for tetrahedron pair generator",
+        "version": "1.0"
+    },
+    "output_format": {
+        "value": "csv",
+        "description": "Output format for generated data",
+        "valid_options": [
+            "json",
+            "csv",
+            "obj"
+        ],
+        "example": "json"
+    },
+    "precision": {
+        "value": 16,
+        "description": "Decimal precision for floating point numbers",
+        "valid_range": "1-16",
+        "example": 6
+    },
+    "dataset_size": {
+        "value": 100,
+        "description": "Number of tetrahedron pairs to generate",
+        "valid_range": "integers greater than 0",
+        "example": 1000
+    },
+    "intersection_distribution": {
+        "value": [
+            0,
+            0,
+            0,
+            0,
+            100
+        ],
+        "description": "Percentage distribution of intersection types",
+        "constraints": [
+            "Must contain exactly 5 values",
+            "Values must sum to 100",
+            "Each value represents percentage for: [Type 1, Type 2, Type 3, Type 4, Type 5]"
+        ],
+        "example": [
+            20,
+            20,
+            20,
+            20,
+            20
+        ]
+    },
+    "volume_range": {
+        "value": {
+            "min": 0.0,
+            "max": 0.166667
+        },
+        "description": "Range for tetrahedron volumes",
+        "valid_range": {
+            "min": "0.0 to max",
+            "max": "min to 1/6"
+        },
+        "example": {
+            "min": 0.0,
+            "max": 0.166667
+        }
+    },
+    "num_bins": {
+        "value": 10,
+        "description": "Number of volume distribution intervals",
+        "valid_range": "integers greater than 0",
+        "example": 10
+    }
+}

@@ -4,107 +4,71 @@
 #include "headers/GeometryUtils.h"
 #include "headers/TetrahedronFactory.h"
 #include "headers/Types.h"
+#include "headers/Utils.h"
+#include "headers/Config.h"
 
-void post_processing(std::unique_ptr<BaseWriter>& writer, const std::string& format) {
-    if (format == "obj") {
-        OBJWriter* obj_writer = dynamic_cast<OBJWriter*>(writer.get());
-        if (obj_writer != nullptr) {
-            obj_writer->zipDirectory();
-        }
-    } if (format == "csv") {
-    //     std::string filename = "your_file.csv"; // Replace with your filename
-    //     std::ifstream inFile(filename);
-    //     std::vector<std::tuple<double, std::string>> data;
+int main() {
+    try {
+        srand(static_cast<unsigned int>(time(nullptr)));
 
-    //     std::string line;
-    //     while (std::getline(inFile, line)) {
-    //         std::istringstream iss(line);
-    //         std::string tetrahedron1, tetrahedron2, intersectionStatus;
-    //         if (!(iss >> tetrahedron1 >> tetrahedron2 >> intersectionStatus)) { break; } // error
+        // Load configuration
+        Configuration config;
+        const int number_of_entries = config.getDatasetSize();
+        const std::string format = config.getOutputFormat();
+        const auto& distribution = config.getIntersectionDistribution();
+        const auto precision = config.getPrecision();
 
-    //         // Parse the x coordinate of the first vertex of the first tetrahedron
-    //         // This assumes that the tetrahedron is represented as a string "x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4"
-    //         std::string::size_type sz;
-    //         double x = std::stod(tetrahedron1, &sz);
-    //         data.push_back(std::make_tuple(x, line));
-    //     }
-
-    //     // Sort the data
-    //     std::sort(data.begin(), data.end());
-
-    //     // Write the sorted data back out to the CSV file
-    //     std::ofstream outFile(filename);
-    //     for (const auto& row : data) {
-    //         outFile << std::get<1>(row) << "\n";
-    // }
-    }
-}
-
-void print_progress_bar(int i, int NUMBER_OF_ENTRIES) {
-    // Print progress bar
-    std::cout << "\rProgress: [";
-    int pos = static_cast<int>(static_cast<float>(i) / NUMBER_OF_ENTRIES * 50);
-    for (int j = 0; j < 50; ++j) {
-        if (j < pos) std::cout << "=";
-        else if (j == pos) std::cout << ">";
-        else std::cout << " ";
-    }
-    std::cout << "] " << int(static_cast<float>(i) / NUMBER_OF_ENTRIES * 100.0) << " %";
-    std::cout.flush();
-}
-
-int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <NUMBER_OF_ENTRIES> <FORMAT>" << std::endl;
-        return 1;
-    }
-
-    int NUMBER_OF_ENTRIES = std::atoi(argv[1]);
-    std::string format = argv[2];
-
-    if(NUMBER_OF_ENTRIES <= 0) {
-        std::cerr << "The number of entries must be a positive integer." << std::endl;
-        return 1;
-    }
-
-    if (format != "json" && format != "csv" && format != "obj") {
-        std::cerr << "Unsupported format. Please choose 'json' or 'csv'." << std::endl;
-        return 1;
-    }
-
-    srand(static_cast<unsigned int>(time(nullptr))); // Seed randomness
-
-    auto writer = BaseWriter::createWriter(format, NUMBER_OF_ENTRIES);
-    if (!writer) {
-        std::cerr << "Failed to create writer." << std::endl;
-        return 1;
-    }
-
-    std::unique_ptr<TetrahedronFactory> tetrahedron_factory = std::make_unique<TetrahedronFactory>();
-    for (int i = 0; i < NUMBER_OF_ENTRIES; ++i) {
-        std::unique_ptr<Tetrahedron> tetrahedron1;
-        std::unique_ptr<Tetrahedron> tetrahedron2;
-
-        if (i % 2 == 0) {
-            auto tetrahedronPair = tetrahedron_factory->createType1TetrahedronPair();
-            tetrahedron1 = std::make_unique<Tetrahedron>(tetrahedronPair.first);
-            tetrahedron2 = std::make_unique<Tetrahedron>(tetrahedronPair.second);
-        } else {
-            auto tetrahedronPair = tetrahedron_factory->createType4TetrahedronPair();
-            tetrahedron1 = std::make_unique<Tetrahedron>(tetrahedronPair.first);
-            tetrahedron2 = std::make_unique<Tetrahedron>(tetrahedronPair.second);
+        // Create writer
+        auto writer = BaseWriter::createWriter(format, number_of_entries, precision);
+        if (!writer) {
+            std::cerr << "Failed to create writer." << std::endl;
+            return 1;
         }
 
-        bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
-        double intersection_volume = GeometryUtils::getIntersectionVolume(*tetrahedron1, *tetrahedron2);
-        writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);
+        // Calculate entries per type
+        std::vector<int> entries_per_type(distribution.size());
+        std::vector<int> generated_per_type(distribution.size(), 0);
+        int remaining_entries = number_of_entries;
 
-        print_progress_bar(i + 1, NUMBER_OF_ENTRIES);
+        for (size_t i = 0; i < distribution.size(); i++) {
+            entries_per_type[i] = static_cast<int>((distribution[i] / 100.0) * number_of_entries);
+            remaining_entries -= entries_per_type[i];
+        }
+        entries_per_type[0] += remaining_entries;
+
+        // Create factory
+        std::unique_ptr<TetrahedronFactory> tetrahedron_factory = std::make_unique<TetrahedronFactory>();
+
+        // Generate tetrahedrons based on distribution
+        for (int i = 0; i < number_of_entries; ++i) {
+            std::unique_ptr<Tetrahedron> tetrahedron1;
+            std::unique_ptr<Tetrahedron> tetrahedron2;
+
+            // Find next type that needs more entries
+            int type = 0;
+            for (size_t j = 0; j < entries_per_type.size(); j++) {
+                if (generated_per_type[j] < entries_per_type[j]) {
+                    type = j + 1;
+                    generated_per_type[j]++;
+                    break;
+                }
+            }
+
+            auto tetrahedron_pair = tetrahedron_factory->createRandomTetrahedronPair(type);
+            tetrahedron1 = std::make_unique<Tetrahedron>(tetrahedron_pair.first);
+            tetrahedron2 = std::make_unique<Tetrahedron>(tetrahedron_pair.second);
+
+            bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
+            double intersection_volume = GeometryUtils::getIntersectionVolume(*tetrahedron1, *tetrahedron2);
+            writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);
+
+            print_progress_bar(i + 1, number_of_entries);
+        }
+        writer.reset();
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
-
-    post_processing(writer, format);
-
-    std::cout << std::endl;
 
     return 0;
 }
