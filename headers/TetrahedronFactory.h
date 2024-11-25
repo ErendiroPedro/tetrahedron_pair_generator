@@ -13,10 +13,6 @@ public:
     static std::pair<Tetrahedron, Tetrahedron> createType4TetrahedronPair();
     static std::pair<Tetrahedron, Tetrahedron> createType5TetrahedronPair();
     
-private:
-
-    static Point generateRandomPoint();
-    static Point generateRandomPointOnTriangle(const Point& A, const Point& B, const Point& C);
 };
 
 #endif // TETRAHEDRONFACTORY_H
