@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <limits>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Nef_polyhedron_3.h>
@@ -59,3 +60,5 @@ enum class IntersectionType {
 };
 
 using json = nlohmann::json;
+
+constexpr double epsilon = 1e-16;
