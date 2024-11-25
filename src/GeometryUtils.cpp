@@ -1,5 +1,6 @@
 #include "GeometryUtils.h"
 
+static CGAL::Random randomGenerator; // Static instance, initialized once
 
 std::vector<Point> GeometryUtils::getIntersectionShape(const Tetrahedron& T1, const Tetrahedron& T2) {
     std::vector<Point> resulting_shape;
@@ -67,8 +68,9 @@ IntersectionType GeometryUtils::getIntersectionClassification(const Tetrahedron&
         throw std::runtime_error("Conversion Failed");
     }
 
-    size_t num_vertices = std::distance(poly.vertices_begin(), poly.vertices_end());
+    size_t num_vertices = poly.size_of_vertices();
     size_t num_edges = std::distance(poly.edges_begin(), poly.edges_end());
+    std::cout << "number of vertices: " + std::to_string(num_edges) << std::endl;
     size_t num_faces = std::distance(poly.facets_begin(), poly.facets_end());
 
 
@@ -107,4 +109,113 @@ Mesh GeometryUtils::tetrahedronToMesh(const Tetrahedron& T) {
         throw std::runtime_error("Mesh is open");
 
     return m;    
+}
+
+Point GeometryUtils::generateRandomPoint() {
+    double x = randomGenerator.get_double(0.0, 1.0);
+    double y = randomGenerator.get_double(0.0, 1.0);
+    double z = randomGenerator.get_double(0.0, 1.0);
+    return Point(x, y, z);
+}
+
+Tetrahedron GeometryUtils::generateRandomTetrahedron(){
+    Point vertexA, vertexB, vertexC, vertexD;
+    Tetrahedron tetrahedron;
+
+    do {
+
+        vertexA = GeometryUtils::generateRandomPoint();
+        vertexB = GeometryUtils::generateRandomPoint();
+        vertexC = GeometryUtils::generateRandomPoint();
+        vertexD = GeometryUtils::generateRandomPoint();
+
+        tetrahedron = Tetrahedron(vertexA, vertexB, vertexC, vertexD);
+
+    } while (tetrahedron.is_degenerate());
+
+    return tetrahedron;
+}
+
+Point GeometryUtils::generateRandomPointOnTriangle(const Point& A, const Point& B, const Point& C) {
+    return *CGAL::Random_points_in_triangle_3<Point, CGAL::Creator_uniform_3<double, Point>>(A, B, C);
+}
+
+Point GeometryUtils::generateRandomPointOutsideTetrahedron(const Tetrahedron tetrahedron) {
+    Point random_point;
+    do {
+        random_point = generateRandomPoint();
+    } while (tetrahedron.has_on_bounded_side(random_point));
+    return random_point;
+}
+
+
+// CoordinateSystem class
+
+GeometryUtils::CoordinateSystem::CoordinateSystem(const Vector& n) {
+    normal = n / std::sqrt(CGAL::to_double(n.squared_length()));
+    
+    // Create orthogonal basis (Gram-Schmidt)
+    // Find a vector not parallel to normal
+    Vector temp;
+    if (std::abs(CGAL::to_double(normal.x())) < 0.9) {
+        temp = Vector(1, 0, 0);
+    } else {
+        temp = Vector(0, 1, 0);
+    }
+    
+    // First tangent vector (in the plane perpendicular to normal)
+    tangent1 = CGAL::cross_product(normal, temp);
+    tangent1 = tangent1 / std::sqrt(CGAL::to_double(tangent1.squared_length()));
+    
+    // Second tangent vector (completing the orthonormal basis)
+    tangent2 = CGAL::cross_product(normal, tangent1);
+    tangent2 = tangent2 / std::sqrt(CGAL::to_double(tangent2.squared_length()));
+}
+
+double GeometryUtils::CoordinateSystem::calculateMaxRadius(const Point& origin, double theta, double phi) const {
+    // Convert unit vector in specified direction to global space
+    Point unit_direction = sphericalToGlobal(origin, 1.0, theta, phi);
+    
+    double x_dir = CGAL::to_double(unit_direction.x() - origin.x());
+    double y_dir = CGAL::to_double(unit_direction.y() - origin.y());
+    double z_dir = CGAL::to_double(unit_direction.z() - origin.z());
+    
+    double x_o = CGAL::to_double(origin.x());
+    double y_o = CGAL::to_double(origin.y());
+    double z_o = CGAL::to_double(origin.z());
+
+    double r_max = std::numeric_limits<double>::max();
+    
+    // Check each axis constraint
+    if (std::abs(x_dir) > epsilon) {
+        r_max = std::min(r_max, x_dir > 0 ? (1 - x_o) / x_dir : -x_o / x_dir);
+    }
+    if (std::abs(y_dir) > epsilon) {
+        r_max = std::min(r_max, y_dir > 0 ? (1 - y_o) / y_dir : -y_o / y_dir);
+    }
+    if (std::abs(z_dir) > epsilon) {
+        r_max = std::min(r_max, z_dir > 0 ? (1 - z_o) / z_dir : -z_o / z_dir);
+    }
+    
+    return std::max(epsilon, r_max);
+}
+
+
+Point GeometryUtils::CoordinateSystem::sphericalToGlobal(const Point& origin, double r, double theta, double phi) const {
+    // In normal-aligned space:
+    // x = r * cos(theta) * sin(phi)
+    // y = r * sin(theta) * sin(phi)
+    // z = r * cos(phi)
+    double x = r * std::cos(theta) * std::sin(phi);
+    double y = r * std::sin(theta) * std::sin(phi);
+    double z = r * std::cos(phi);
+
+    // Transform to global space using the basis vectors
+    Vector offset = (x * tangent1) + (y * tangent2) + (z * normal);
+    
+    return Point(
+        CGAL::to_double(origin.x()) + CGAL::to_double(offset.x()),
+        CGAL::to_double(origin.y()) + CGAL::to_double(offset.y()),
+        CGAL::to_double(origin.z()) + CGAL::to_double(offset.z())
+    );
 }
