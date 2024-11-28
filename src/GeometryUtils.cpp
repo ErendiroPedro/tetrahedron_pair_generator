@@ -36,9 +36,25 @@ double GeometryUtils::getIntersectionVolume(const Tetrahedron& T1, const Tetrahe
 
     Nef_polyhedron intersection = nef1 * nef2;
 
-    if(intersection.is_empty()) return resulting_volume; 
+    if(intersection.is_empty()) return resulting_volume;
+        
+    try {
+        Nef_polyhedron regularized = intersection.regularization();
+        if (regularized.is_simple()) {
+            intersection = regularized;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Regularization failed: " << e.what() << std::endl;
+    }
+
     Polyhedron resulting_polyhedron;
-    intersection.convert_to_polyhedron(resulting_polyhedron);
+    try {
+        intersection.convert_to_polyhedron(resulting_polyhedron);
+    } catch (const std::exception& e) {
+        std::cerr << "Polyhedron conversion error: " << e.what() << std::endl;
+    }
+    
+    if (resulting_polyhedron.is_empty()) return resulting_volume;
 
     if (!CGAL::is_valid_polygon_mesh(resulting_polyhedron)) {
         throw std::runtime_error("Conversion Failed");
@@ -62,16 +78,28 @@ IntersectionType GeometryUtils::getIntersectionClassification(const Tetrahedron&
     Nef_polyhedron intersection = nef1 * nef2;
     if (intersection.is_empty()) return IntersectionType::None;
 
-    Polyhedron poly;
-    intersection.convert_to_polyhedron(poly);    
-    if (!CGAL::is_valid_polygon_mesh(poly)) {
-        throw std::runtime_error("Conversion Failed");
+    try {
+        Nef_polyhedron regularized = intersection.regularization();
+        if (regularized.is_simple()) {
+            intersection = regularized;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Regularization failed: " << e.what() << std::endl;
     }
 
-    size_t num_vertices = poly.size_of_vertices();
-    size_t num_edges = std::distance(poly.edges_begin(), poly.edges_end());
-    std::cout << "number of vertices: " + std::to_string(num_edges) << std::endl;
-    size_t num_faces = std::distance(poly.facets_begin(), poly.facets_end());
+    Polyhedron resulting_polyhedron;
+    try {
+        intersection.convert_to_polyhedron(resulting_polyhedron);
+    } catch (const std::exception& e) {
+        std::cerr << "Polyhedron conversion error: " << e.what() << std::endl;
+    }
+
+    size_t num_vertices = resulting_polyhedron.size_of_vertices();
+    std::cout << "vertices: " + std::to_string(num_vertices) << std::endl;
+    size_t num_edges = std::distance(resulting_polyhedron.edges_begin(), resulting_polyhedron.edges_end());
+    std::cout << "edges : " + std::to_string(num_edges) << std::endl;
+    size_t num_faces = std::distance(resulting_polyhedron.facets_begin(), resulting_polyhedron.facets_end());
+    std::cout << "faces: " + std::to_string(num_faces) << std::endl;
 
 
     if (num_vertices == 1) {
@@ -149,27 +177,21 @@ Point GeometryUtils::generateRandomPointOutsideTetrahedron(const Tetrahedron tet
 }
 
 
-// CoordinateSystem class
-
 GeometryUtils::CoordinateSystem::CoordinateSystem(const Vector& n) {
-    normal = n / std::sqrt(CGAL::to_double(n.squared_length()));
+    // Define local coordinate system
+    assert(n.squared_length() > 0 && "Input vector n must be non-zero.");
+
     
-    // Create orthogonal basis (Gram-Schmidt)
-    // Find a vector not parallel to normal
-    Vector temp;
-    if (std::abs(CGAL::to_double(normal.x())) < 0.9) {
-        temp = Vector(1, 0, 0);
+    z_axis = n.direction().vector();
+    
+    if (std::abs(CGAL::to_double(z_axis.x())) > 0.99) {
+        x_axis = CGAL::cross_product(z_axis, Vector(0, 1, 0)); // Define x-axis with fallback if z-axis is nearly aligned with (1, 0, 0)
     } else {
-        temp = Vector(0, 1, 0);
+        x_axis = CGAL::cross_product(z_axis, Vector(1, 0, 0));
     }
+    x_axis = x_axis / std::sqrt(CGAL::to_double(x_axis.squared_length()));
     
-    // First tangent vector (in the plane perpendicular to normal)
-    tangent1 = CGAL::cross_product(normal, temp);
-    tangent1 = tangent1 / std::sqrt(CGAL::to_double(tangent1.squared_length()));
-    
-    // Second tangent vector (completing the orthonormal basis)
-    tangent2 = CGAL::cross_product(normal, tangent1);
-    tangent2 = tangent2 / std::sqrt(CGAL::to_double(tangent2.squared_length()));
+    y_axis = CGAL::cross_product(z_axis, x_axis);
 }
 
 double GeometryUtils::CoordinateSystem::calculateMaxRadius(const Point& origin, double theta, double phi) const {
@@ -200,8 +222,9 @@ double GeometryUtils::CoordinateSystem::calculateMaxRadius(const Point& origin, 
     return std::max(epsilon, r_max);
 }
 
-
 Point GeometryUtils::CoordinateSystem::sphericalToGlobal(const Point& origin, double r, double theta, double phi) const {
+    assert(r >= 0 && "Radius must be non-negative.");
+
     // In normal-aligned space:
     // x = r * cos(theta) * sin(phi)
     // y = r * sin(theta) * sin(phi)
@@ -211,7 +234,7 @@ Point GeometryUtils::CoordinateSystem::sphericalToGlobal(const Point& origin, do
     double z = r * std::cos(phi);
 
     // Transform to global space using the basis vectors
-    Vector offset = (x * tangent1) + (y * tangent2) + (z * normal);
+    Vector offset = (x * x_axis) + (y * y_axis) + (z * z_axis);
     
     return Point(
         CGAL::to_double(origin.x()) + CGAL::to_double(offset.x()),

@@ -17,9 +17,10 @@ public:
 
     class CoordinateSystem {
     public:
-        Vector normal;    // Z axis in local space
-        Vector tangent1;  // X axis in local space
-        Vector tangent2;  // Y axis in local space
+        Vector x_axis;
+        Vector y_axis;
+        Vector z_axis;
+        
 
         CoordinateSystem(const Vector& n);
 
