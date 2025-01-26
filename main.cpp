@@ -11,14 +11,15 @@ int main() {
     try {
         srand(static_cast<unsigned int>(time(nullptr)));
 
-        // Load configuration
         Configuration config;
         const int number_of_entries = config.getDatasetSize();
         const std::string format = config.getOutputFormat();
         const auto& distribution = config.getIntersectionDistribution();
         const auto precision = config.getPrecision();
+        const auto min_volume = config.getMinVolume();
+        const auto max_volume = config.getMaxVolume();
+        const auto num_bins = config.getNumBins();
 
-        // Create writer
         auto writer = BaseWriter::createWriter(format, number_of_entries, precision);
         if (!writer) {
             std::cerr << "Failed to create writer." << std::endl;
@@ -35,11 +36,13 @@ int main() {
             remaining_entries -= entries_per_type[i];
         }
         entries_per_type[0] += remaining_entries;
-
-        // Create factory
         std::unique_ptr<TetrahedronFactory> tetrahedron_factory = std::make_unique<TetrahedronFactory>();
 
-        // Generate tetrahedrons based on distribution
+        const auto size_of_interval = (max_volume - min_volume) / num_bins;
+        std::vector<int> volume_distribution (num_bins, 0);
+        const auto number_of_entries_per_bin = static_cast<int> (entries_per_type[4] / num_bins); // uniform distribution of volume
+
+        // Generate tetrahedrons based on configuration
         for (int i = 0; i < number_of_entries; ++i) {
             std::unique_ptr<Tetrahedron> tetrahedron1;
             std::unique_ptr<Tetrahedron> tetrahedron2;
@@ -60,6 +63,36 @@ int main() {
 
             bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
             double intersection_volume = GeometryUtils::getIntersectionVolume(*tetrahedron1, *tetrahedron2);
+
+            if(type == 5){
+
+                if(intersection_volume < min_volume || intersection_volume > max_volume) {
+                    // If volume is outside of range, discard entry
+                    generated_per_type[type - 1]--;
+                    i--;
+                    continue;
+                }
+
+                // int bin = static_cast<int>(intersection_volume / size_of_interval) - 1;
+
+                // if(bin < 0){
+                //     bin = 0;
+                // }else if(bin >= num_bins){
+                //     bin = num_bins - 1;
+                // }
+                
+                // assert(bin >= 0 && bin < num_bins);
+
+                // if(volume_distribution[bin] >= number_of_entries_per_bin){
+                //     // If bin is full, discard entry
+                //     generated_per_type[type - 1]--;
+                //     i--;
+                //     continue;
+                // }
+
+                // volume_distribution[bin]++;
+            }
+
             writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);
 
             print_progress_bar(i + 1, number_of_entries);
