@@ -72,7 +72,7 @@ A configurable tool for generating synthetic datasets of intersecting/non-inters
 {
   "dataset_size": 10000,
   "output_format": "csv",
-  "precision": 1e-6,
+  "precision": 6,
   "intersection_distribution": {
     "none": 30,
     "point": 20,
