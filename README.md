@@ -1,11 +1,83 @@
-# TetrahedronPairGenerator Installation Guide
+# Tetrahedron Pair Data Generator
 
-This guide will walk you through setting up the TetrahedronPairGenerator, including the installation of required tools and libraries.
+A configurable tool for generating synthetic datasets of intersecting/non-intersecting tetrahedron pairs. Supports multiple intersection types (point, segment, polygon, polyhedron) and output formats (CSV/JSON/OBJ). Ideal for creating training/evaluation data for geometric ML models.
 
-## Prerequisites
+## Key Components
 
-Ensure you have the following tools installed on your system:
+### Configuration Management
+- **JSON Configuration**: Define dataset size, precision, intersection distributions, and volume ranges.
+- **Validation**: Ensures parameters are valid (e.g., distributions sum to 100%, volume ranges are feasible).
 
-- CMake (3.1 or higher)
-- A C++ compiler (g++, clang++, etc.)
-- CGAL library
+### Data Writers
+- **Formats**: CSV, JSON, and OBJ output via `BaseWriter` interface.
+- **Dynamic Selection**: Writer chosen automatically based on configuration.
+
+### Geometry Utilities
+- **Intersection Checks**: Detects intersections between tetrahedrons.
+- **Volume Computation**: Calculates intersection volumes with user-specified precision.
+
+### Tetrahedron Factory
+- **Controlled Generation**: Creates random tetrahedron pairs adhering to configured distributions (intersection types, volume ranges).
+
+### Generation Workflow
+1. Distributes workload based on intersection type ratios.
+2. Generates pairs, computes intersections/volumes.
+3. Writes data with real-time progress tracking.
+
+---
+
+## Generation Strategies
+
+### Baseline Strategy
+- **Process**:
+  1. Randomly generate tetrahedron vertices.
+  2. Validate tetrahedron geometry.
+  3. Check for intersection and compute volume.
+  4. Repeat until dataset is complete.
+
+### No Intersection
+- **Guaranteed Separation**:
+  - Generate random pairs until non-intersecting pair is found.
+  - Useful for creating negative training examples.
+
+### Point Intersection
+- **Precision Control**:
+  1. Generate a vertex on a face of `T1`.
+  2. Create `T2` with vertices projected along the face's normal.
+  3. Ensure single-point contact using spherical coordinates and radius limits.
+
+### Segment Intersection
+- **Line Contact**:
+  1. Project two points onto a face of `T1`.
+  2. Build `T2` vertices along the face's plane to form a line intersection.
+  3. Validate using spherical coordinates and radius constraints.
+
+### Polygon Intersection
+- **Planar Overlap**:
+  1. Project three points onto a face of `T1`.
+  2. Compute fourth vertex of `T2` along the face's normal.
+  3. Ensure polygonal overlap while avoiding full containment.
+
+### Polyhedron Intersection
+- **Volume Overlap**:
+  - Generate random pairs until intersecting configuration is found.
+  - Most common for complex 3D overlaps.
+
+---
+
+## Usage
+
+1. **Configure** (`config.json`):
+```json
+{
+  "dataset_size": 10000,
+  "output_format": "csv",
+  "precision": 1e-6,
+  "intersection_distribution": {
+    "none": 30,
+    "point": 20,
+    "segment": 20,
+    "polygon": 20,
+    "polyhedron": 10
+  }
+}
