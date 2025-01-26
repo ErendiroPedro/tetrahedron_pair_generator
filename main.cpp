@@ -63,6 +63,7 @@ int main() {
             writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);
 
             print_progress_bar(i + 1, number_of_entries);
+
         }
         writer.reset();
     } catch (const std::exception& e) {
@@ -70,5 +71,6 @@ int main() {
         return 1;
     }
 
+    std::cout << std::endl;
     return 0;
 }
