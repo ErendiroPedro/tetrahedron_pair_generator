@@ -64,33 +64,37 @@ int main() {
             bool intersection_status = GeometryUtils::checkIntersection(*tetrahedron1, *tetrahedron2);
             double intersection_volume = GeometryUtils::getIntersectionVolume(*tetrahedron1, *tetrahedron2);
 
-            if(type == 5){
-
-                if(intersection_volume < min_volume || intersection_volume > max_volume) {
-                    // If volume is outside of range, discard entry
+            if (type == 5) {
+                if (intersection_volume < min_volume || intersection_volume > max_volume) {
+                    // Discard entry if volume is out of range
                     generated_per_type[type - 1]--;
                     i--;
                     continue;
                 }
 
-                // int bin = static_cast<int>(intersection_volume / size_of_interval) - 1;
+                // Calculate the correct bin for the volume
+                double normalized_volume = intersection_volume - min_volume;
+                int bin = static_cast<int>(normalized_volume / size_of_interval);
 
-                // if(bin < 0){
-                //     bin = 0;
-                // }else if(bin >= num_bins){
-                //     bin = num_bins - 1;
-                // }
-                
-                // assert(bin >= 0 && bin < num_bins);
+                // Clamp the bin to valid range
+                if (bin < 0) {
+                    bin = 0;
+                } else if (bin >= num_bins) {
+                    bin = num_bins - 1;
+                }
 
-                // if(volume_distribution[bin] >= number_of_entries_per_bin){
-                //     // If bin is full, discard entry
-                //     generated_per_type[type - 1]--;
-                //     i--;
-                //     continue;
-                // }
+                assert(bin >= 0 && bin < num_bins);
 
-                // volume_distribution[bin]++;
+                // Check if the current bin is already full
+                if (volume_distribution[bin] >= number_of_entries_per_bin) {
+                    // Discard entry if bin is full
+                    generated_per_type[type - 1]--;
+                    i--;
+                    continue;
+                }
+
+                // Accept the entry and increment the bin count
+                volume_distribution[bin]++;
             }
 
             writer->writeEntry(*tetrahedron1, *tetrahedron2, intersection_volume, intersection_status);

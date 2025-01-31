@@ -36,7 +36,7 @@ double GeometryUtils::getIntersectionVolume(const Tetrahedron& T1, const Tetrahe
 
     Nef_polyhedron intersection = nef1 * nef2;
 
-    if(intersection.is_empty()) return resulting_volume;
+    if(intersection.is_empty()) throw std::runtime_error("Intersection Shouldn't Be Empty Here");
         
     try {
         Nef_polyhedron regularized = intersection.regularization();
@@ -44,20 +44,20 @@ double GeometryUtils::getIntersectionVolume(const Tetrahedron& T1, const Tetrahe
             intersection = regularized;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Regularization failed: " << e.what() << std::endl;
+        std::cerr << "Regularization Failed: " << e.what() << std::endl;
     }
 
     Polyhedron resulting_polyhedron;
     try {
         intersection.convert_to_polyhedron(resulting_polyhedron);
     } catch (const std::exception& e) {
-        std::cerr << "Polyhedron conversion error: " << e.what() << std::endl;
+        std::cerr << "Polyhedron Conversion Error: " << e.what() << std::endl;
     }
     
     if (resulting_polyhedron.is_empty()) return resulting_volume;
 
     if (!CGAL::is_valid_polygon_mesh(resulting_polyhedron)) {
-        throw std::runtime_error("Conversion Failed");
+        throw std::runtime_error("Something Went Wrong, Resulting Polyhedron Is Invalid Mesh");
     }
 
     auto volume = CGAL::Polygon_mesh_processing::volume(resulting_polyhedron);
@@ -95,11 +95,8 @@ IntersectionType GeometryUtils::getIntersectionClassification(const Tetrahedron&
     }
 
     size_t num_vertices = resulting_polyhedron.size_of_vertices();
-    std::cout << "vertices: " + std::to_string(num_vertices) << std::endl;
     size_t num_edges = std::distance(resulting_polyhedron.edges_begin(), resulting_polyhedron.edges_end());
-    std::cout << "edges : " + std::to_string(num_edges) << std::endl;
     size_t num_faces = std::distance(resulting_polyhedron.facets_begin(), resulting_polyhedron.facets_end());
-    std::cout << "faces: " + std::to_string(num_faces) << std::endl;
 
 
     if (num_vertices == 1) {
@@ -176,7 +173,6 @@ Point GeometryUtils::generateRandomPointOutsideTetrahedron(const Tetrahedron tet
     return random_point;
 }
 
-
 GeometryUtils::CoordinateSystem::CoordinateSystem(const Vector& n) {
     // Define local coordinate system
     assert(n.squared_length() > 0 && "Input vector n must be non-zero.");
@@ -242,3 +238,4 @@ Point GeometryUtils::CoordinateSystem::sphericalToGlobal(const Point& origin, do
         CGAL::to_double(origin.z()) + CGAL::to_double(offset.z())
     );
 }
+

@@ -40,7 +40,7 @@ void Configuration::validateConfig() {
         throw std::invalid_argument("Intersection distribution must have exactly 5 values");
     }
 
-    if (volume_min < 0 || volume_max > 0.17 || volume_min >= volume_max) {
+    if (volume_min < 0 || volume_max > 0.333333333333333 || volume_min >= volume_max) {
         throw std::invalid_argument("Invalid volume range");
     }
 

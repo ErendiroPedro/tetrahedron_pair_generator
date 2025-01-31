@@ -5,6 +5,7 @@
 #include <cmath>
 #include <random>
 #include "GeometryUtils.h"
+#include <CGAL/point_generators_3.h>
 
 static CGAL::Random randomGenerator; // initialized once
 
@@ -55,14 +56,17 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::PointIntersection() { //
     Tetrahedron tetrahedron1, tetrahedron2;
 
     auto start_time = std::chrono::steady_clock::now();
-    constexpr std::chrono::seconds timeout(3);
+    constexpr std::chrono::seconds timeout(1);
 
     std::random_device rd;
     std::mt19937 gen(rd());
 
     while (true) {
+
         // Generate the first tetrahedron T1
         tetrahedron1 = GeometryUtils::generateRandomTetrahedron();
+
+        // Strategy 1
 
         // Generate random point on the selected face
         Point vertex1 = GeometryUtils::generateRandomPointOnTriangle(
@@ -73,8 +77,8 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::PointIntersection() { //
         Vector normal = CGAL::normal(tetrahedron1.vertex(0), tetrahedron1.vertex(1), tetrahedron1.vertex(2));
 
         // Ensure the normal points outward
-        Vector to_fourth = tetrahedron1.vertex(3) - tetrahedron1.vertex(0);
-        if (CGAL::to_double(normal * to_fourth) > 0) {
+        Vector direction_to_apex = tetrahedron1.vertex(3) - tetrahedron1.vertex(0);
+        if (CGAL::to_double(normal * direction_to_apex) > 0) {
             normal = -normal;
         }
 
@@ -242,7 +246,7 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::LineIntersection() { // 
 std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::PolygonIntersection() { // Polygon
     Tetrahedron tetrahedron1, tetrahedron2;
     auto start_time = std::chrono::steady_clock::now();
-    constexpr std::chrono::seconds timeout(3);
+    constexpr std::chrono::seconds timeout(1);
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -259,9 +263,9 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::PolygonIntersection() { 
         );
 
         // Project three random points onto the face plane
-        Point random_point_on_plane_1 = random_face_plane.projection(GeometryUtils::generateRandomPoint());
-        Point random_point_on_plane_2 = random_face_plane.projection(GeometryUtils::generateRandomPoint());
-        Point random_point_on_plane_3 = random_face_plane.projection(GeometryUtils::generateRandomPoint());
+        Point vertex1 = random_face_plane.projection(GeometryUtils::generateRandomPoint());
+        Point vertex2 = random_face_plane.projection(GeometryUtils::generateRandomPoint());
+        Point vertex3 = random_face_plane.projection(GeometryUtils::generateRandomPoint());
 
         // Compute face normal
         Vector normal = CGAL::normal(
@@ -272,15 +276,14 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::PolygonIntersection() { 
 
         // Calculate centroid of projected points
         Point centroid = CGAL::centroid(
-            random_point_on_plane_1, 
-            random_point_on_plane_2, 
-            random_point_on_plane_3
+            vertex1, 
+            vertex2, 
+            vertex3
         );
 
         // Ensure normal points outward
-        Point fourth_vertex = tetrahedron1.vertex(3);
-        Vector to_fourth = fourth_vertex - tetrahedron1.vertex(0);
-        if (CGAL::to_double(normal * to_fourth) > 0) {
+        Vector direction_to_apex = tetrahedron1.vertex(3) - tetrahedron1.vertex(0);
+        if (CGAL::to_double(normal * direction_to_apex) > 0) {
             normal = -normal;
         }
 
@@ -308,19 +311,19 @@ std::pair<Tetrahedron, Tetrahedron> TetrahedronFactory::PolygonIntersection() { 
             double r = dist_r(gen);
 
             // Generate fourth vertex in global space
-            Point new_vertex = coords.sphericalToGlobal(centroid, r, theta, phi);
+            Point vertex4 = coords.sphericalToGlobal(centroid, r, theta, phi);
 
             // Validate point is not inside original tetrahedron
-            if (tetrahedron1.has_on_bounded_side(new_vertex)) {
+            if (tetrahedron1.has_on_bounded_side(vertex4)) {
                 continue;  // Try again if point is inside
             }
 
             // Construct potential second tetrahedron
             tetrahedron2 = Tetrahedron(
-                random_point_on_plane_1, 
-                random_point_on_plane_2,
-                random_point_on_plane_3, 
-                new_vertex
+                vertex1, 
+                vertex2,
+                vertex3, 
+                vertex4
             );
 
             // Check tetrahedron validity and intersection
