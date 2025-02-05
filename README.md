@@ -67,17 +67,85 @@ A configurable tool for generating synthetic datasets of intersecting/non-inters
 
 ## Usage
 
-1. **Configure** (`config.json`):
-```json
-{
-  "dataset_size": 10000,
-  "output_format": "csv",
-  "precision": 6,
-  "intersection_distribution": {
-    "none": 30,
-    "point": 20,
-    "segment": 20,
-    "polygon": 20,
-    "polyhedron": 10
-  }
-}
+### Installation and Setup (Linux)
+
+1. **Clone the Repository**
+   ```sh
+   git clone <repository-url>
+   cd <repository-name>
+   ```
+
+2. **Create a Build Directory**
+   ```sh
+   mkdir build && cd build
+   ```
+
+3. **Install Dependencies**
+   ```sh
+   sudo apt update
+   sudo apt install g++ libcgal-dev
+   ```
+
+4. **Set Environment Variables**
+   ```sh
+   export CXX=/usr/bin/g++
+   export CGAL_DIR=/usr/lib/CGAL
+   ```
+
+5. **Compile the Application**
+   ```sh
+   cmake ..
+   make
+   ```
+
+6. **Adjust Configuration File**
+   Edit the configuration file at:
+   ```sh
+   nano tetrahedron_pair_generator/config/config.json
+   ```
+   Example Configuration:
+   ```json
+   {
+     "dataset_size": 10000,
+     "output_format": "csv",
+     "precision": 6,
+     "intersection_distribution": {
+       "none": 30,
+       "point": 20,
+       "segment": 20,
+       "polygon": 20,
+       "polyhedron": 10
+     }
+   }
+   ```
+
+7. **Run the Generator**
+   ```sh
+   cd bin
+   ./TetrahedronPairGenerator
+   ```
+
+8. **Generated Data**
+   The output files will be stored in the specified format (CSV/JSON/OBJ) as configured in `config.json`.
+
+---
+
+## Troubleshooting
+
+### CMake Cannot Find CGAL
+If CMake throws an error about `FindCGAL.cmake`, manually set the CGAL directory:
+```sh
+cmake -DCGAL_DIR=/usr/lib/CGAL ..
+```
+
+### Compilation Errors
+Ensure all dependencies are installed:
+```sh
+sudo apt install g++ libcgal-dev
+```
+If errors persist, try cleaning the build directory and recompiling:
+```sh
+rm -rf build/*
+cmake ..
+make
+```
